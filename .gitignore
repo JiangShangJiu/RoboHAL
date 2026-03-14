@@ -1,0 +1,28 @@
+# 数据与输出（保留 .gitkeep）
+data/*
+!data/.gitkeep
+outputs/*
+!outputs/.gitkeep
+*.h5
+*.hdf5
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 其他
+*.egg-info/
+dist/
+build/
