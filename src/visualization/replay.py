@@ -10,14 +10,14 @@ from pathlib import Path
 
 import numpy as np
 
-from ..simulation import PandaEnv
+from ..simulation import SimEnv
 from ..simulation.loader import qpos_to_ctrl
 from .viewer import launch_viewer
 
 
 def replay_trajectory(
     qpos_sequence: np.ndarray,
-    env: PandaEnv | None = None,
+    env: SimEnv | None = None,
     dt: float = 0.002,
     slowdown: float = 1.0,
 ) -> None:
@@ -35,7 +35,7 @@ def replay_trajectory(
     import mujoco.viewer  # mujoco 3.x 需显式导入
 
     if env is None:
-        env = PandaEnv(dt=dt)
+        env = SimEnv(dt=dt)
     model, data = env.model, env.data
     nu = model.nu
 

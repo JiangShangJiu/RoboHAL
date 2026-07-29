@@ -12,7 +12,7 @@ from typing import Callable
 
 import numpy as np
 
-from ..simulation import PandaEnv
+from ..simulation import SimEnv
 from ..simulation.loader import qpos_to_ctrl
 from .storage import save_trajectories, load_trajectories
 
@@ -20,13 +20,19 @@ from .storage import save_trajectories, load_trajectories
 class TrajectoryManager:
     """统一的数据录制与回放管理"""
 
-    def __init__(self, env: PandaEnv | None = None, scene: str | None = None):
+    def __init__(
+        self,
+        env: SimEnv | None = None,
+        scene: str | None = None,
+        robot: str | None = None,
+    ):
         """
         Args:
             env: 仿真环境，None 则新建
-            scene: 场景名，如 scene.xml / mjx_single_cube.xml
+            scene: 场景名，如 empty.xml / kitchen_lite.xml
+            robot: 机器人名，默认 panda
         """
-        self.env = env or PandaEnv(scene=scene)
+        self.env = env or SimEnv(scene=scene, robot=robot)
         self._episodes: list[list[dict]] = []
 
     def record(

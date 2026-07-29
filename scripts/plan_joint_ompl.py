@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT))
 
 from src.data_collection.storage import save_trajectories  # noqa: E402
 from src.planning import PandaOMPLJointPlanner, arm7_to_mujoco_qpos  # noqa: E402
-from src.simulation import PandaEnv  # noqa: E402
+from src.simulation import SimEnv  # noqa: E402
 from src.simulation.loader import DEFAULT_Q0, qpos_to_ctrl  # noqa: E402
 
 
@@ -79,7 +79,7 @@ def main() -> None:
         simplify=not args.no_simplify,
     )
 
-    nu = PandaEnv().nu
+    nu = SimEnv().nu
     episodes = []
     ep = []
     for j, row in enumerate(arm_path):

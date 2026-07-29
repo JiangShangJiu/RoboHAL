@@ -1,0 +1,69 @@
+<mujoco model="panda kitchen lite">
+  <!-- 轻量厨房：台面 + 水槽 + 矮柜 + 可抓物体（纯几何，无外部 mesh） -->
+  <include file="../../robots/panda/panda.xml"/>
+
+  <statistic center="0.55 0 0.5" extent="1.2"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="140" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.55 0.65 0.75" rgb2="0.1 0.12 0.15"
+      width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge"
+      rgb1="0.25 0.28 0.3" rgb2="0.18 0.2 0.22" markrgb="0.7 0.7 0.7" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.1"/>
+    <material name="counter" rgba="0.72 0.62 0.48 1" reflectance="0.15"/>
+    <material name="cabinet" rgba="0.35 0.38 0.42 1"/>
+    <material name="sink" rgba="0.75 0.78 0.82 1" reflectance="0.3"/>
+    <material name="wall" rgba="0.88 0.88 0.86 1"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0.4 0 1.8" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+
+    <!-- 后墙（视觉参考） -->
+    <geom name="back_wall" type="box" size="0.8 0.02 0.7" pos="0.7 -0.55 0.7" material="wall" contype="0" conaffinity="0"/>
+
+    <!-- 操作台：台面约 z=0.85，臂前方 -->
+    <body name="counter" pos="0.70 0 0">
+      <geom name="counter_base" type="box" size="0.32 0.42 0.40" pos="0 0 0.40" material="cabinet"/>
+      <geom name="counter_top" type="box" size="0.34 0.44 0.025" pos="0 0 0.825" material="counter"
+        friction="1 0.5 0.01"/>
+    </body>
+
+    <!-- 水槽凹陷（台面右侧） -->
+    <body name="sink" pos="0.78 -0.22 0.85">
+      <geom name="sink_basin" type="box" size="0.12 0.14 0.04" pos="0 0 -0.02" material="sink"
+        friction="0.8 0.4 0.01"/>
+      <geom name="faucet" type="cylinder" size="0.012 0.08" pos="0 -0.12 0.08" rgba="0.7 0.72 0.75 1"
+        contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- 矮柜（台面左侧，静态门板示意） -->
+    <body name="cabinet" pos="0.70 0.38 0">
+      <geom name="cab_body" type="box" size="0.28 0.18 0.38" pos="0 0 0.38" material="cabinet"/>
+      <geom name="cab_shelf" type="box" size="0.24 0.15 0.01" pos="0 0 0.45" rgba="0.45 0.4 0.35 1"/>
+      <geom name="cab_door" type="box" size="0.26 0.015 0.32" pos="0 0.18 0.40" rgba="0.3 0.33 0.36 1"
+        contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- 可抓方块（台面中央） -->
+    <body name="cube" pos="0.55 0.05 0.88">
+      <freejoint/>
+      <geom name="cube" type="box" size="0.025 0.025 0.025" rgba="0.15 0.7 0.35 1"
+        mass="0.05" friction="1.2 0.5 0.01" condim="3" solref="0.01 1"/>
+    </body>
+
+    <!-- 可抓圆柱「杯子」 -->
+    <body name="cup" pos="0.62 0.18 0.90">
+      <freejoint/>
+      <geom name="cup" type="cylinder" size="0.028 0.04" rgba="0.85 0.35 0.25 1"
+        mass="0.08" friction="1 0.5 0.01" condim="3" solref="0.01 1"/>
+    </body>
+  </worldbody>
+</mujoco>

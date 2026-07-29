@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-MuJoCo Panda 模型加载器
+MuJoCo 模型 / 场景加载器。
 
-模型路径优先顺序：
-1. 环境变量 ROBOARENA_PANDA_PATH
-2. 项目 assets/franka_emika_panda
-
-场景切换：
-- 默认 scene.xml，可通过 ROBOARENA_SCENE 或 --scene 指定
-- 支持 assets/franka_emika_panda/*.xml 及 assets/scenes/*.xml
+  assets/robots/<robot>/     机器人本体（XML + mesh）
+  assets/scenes/<robot>/     该机器人可用场景
 """
+
+from __future__ import annotations
 
 import os
 from pathlib import Path
@@ -20,133 +17,151 @@ def _project_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-def find_model_root() -> Path:
-    """查找 Franka Panda 模型目录"""
-    project_root = _project_root()
-    candidates = []
-    if os.environ.get("ROBOARENA_PANDA_PATH"):
-        candidates.append(Path(os.environ["ROBOARENA_PANDA_PATH"]))
-    candidates.append(project_root / "assets" / "franka_emika_panda")
-    for root in candidates:
-        if root.is_dir():
-            return root
+def _assets_root() -> Path:
+    return _project_root() / "assets"
+
+
+def default_robot() -> str:
+    return os.environ.get("ROBOARENA_ROBOT", "panda")
+
+
+def find_robot_root(robot: str | None = None) -> Path:
+    """查找 assets/robots/<robot>。"""
+    name = robot or default_robot()
+    root = _assets_root() / "robots" / name
+    if root.is_dir():
+        return root.resolve()
     raise FileNotFoundError(
-        "未找到 Franka Panda 模型目录。"
-        "请确保 assets/franka_emika_panda 存在，或设置环境变量 ROBOARENA_PANDA_PATH"
+        f"未找到机器人目录: assets/robots/{name}。"
+        f"可用: {list_available_robots()}"
     )
 
 
-def list_available_scenes() -> list[tuple[str, Path]]:
-    """
-    列出可用场景
+def list_available_robots() -> list[str]:
+    robots_dir = _assets_root() / "robots"
+    if not robots_dir.is_dir():
+        return []
+    return sorted(p.name for p in robots_dir.iterdir() if p.is_dir())
 
-    Returns:
-        [(显示名, 绝对路径), ...]
-        包含 assets/franka_emika_panda/*.xml 和 assets/scenes/*.xml
-    """
-    project_root = _project_root()
+
+def list_available_scenes(robot: str | None = None) -> list[tuple[str, Path]]:
+    """返回 [(panda/empty.xml, Path), ...]。"""
+    name = robot or default_robot()
     scenes: list[tuple[str, Path]] = []
-
-    # 模型目录下的 xml
-    try:
-        model_root = find_model_root()
-        for p in sorted(model_root.glob("*.xml")):
-            scenes.append((p.name, p.resolve()))
-    except FileNotFoundError:
-        pass
-
-    # assets/scenes/ 下的自定义场景
-    scenes_dir = project_root / "assets" / "scenes"
+    scenes_dir = _assets_root() / "scenes" / name
     if scenes_dir.is_dir():
         for p in sorted(scenes_dir.glob("*.xml")):
-            scenes.append((f"scenes/{p.name}", p.resolve()))
-
+            scenes.append((f"{name}/{p.name}", p.resolve()))
     return scenes
 
 
-def resolve_scene(scene: str | None = None) -> Path:
+def resolve_scene(
+    scene: str | None = None,
+    robot: str | None = None,
+) -> Path:
     """
-    解析场景路径
+    解析场景路径。
 
-    Args:
-        scene: 场景名或路径。None 则用 ROBOARENA_SCENE 或 "scene.xml"
-
-    Returns:
-        场景文件的绝对路径
+    scene 支持: empty.xml / kitchen_lite.xml / panda/empty.xml / 绝对路径
     """
-    scene = scene or os.environ.get("ROBOARENA_SCENE", "scene.xml")
-    project_root = _project_root()
+    name = robot or default_robot()
+    scene = scene or os.environ.get("ROBOARENA_SCENE", "empty.xml")
 
-    # 绝对路径
     p = Path(scene)
     if p.is_absolute() and p.exists():
-        return p
+        return p.resolve()
 
-    # 相对路径：先查 model_root，再查 assets/scenes
-    model_root = find_model_root()
-    candidates = [
-        model_root / scene,
-        model_root / scene.split("/")[-1],  # scenes/xxx.xml -> xxx.xml in model_root
-        project_root / "assets" / "scenes" / scene.split("/")[-1],
+    rel = scene.removeprefix("scenes/")
+    candidates: list[Path] = [
+        _assets_root() / "scenes" / rel,
+        _assets_root() / "scenes" / name / Path(rel).name,
+        _assets_root() / "scenes" / name / scene,
     ]
+    if not p.is_absolute():
+        candidates.append((_project_root() / scene).resolve())
+        candidates.append(Path(scene).resolve())
+
     for c in candidates:
         if c.exists():
             return c.resolve()
 
-    # 按显示名匹配 list_available_scenes
-    for name, path in list_available_scenes():
-        if name == scene or name.endswith(f"/{scene}") or name == f"scenes/{scene}":
+    for disp, path in list_available_scenes(name):
+        if (
+            disp == scene
+            or disp == rel
+            or disp.endswith(f"/{scene}")
+            or Path(disp).name == Path(scene).name
+        ):
             return path
 
-    raise FileNotFoundError(f"场景不存在: {scene}。可用: {[n for n, _ in list_available_scenes()]}")
+    available = [n for n, _ in list_available_scenes(name)]
+    raise FileNotFoundError(
+        f"场景不存在: {scene}（robot={name}）。可用: {available}"
+    )
 
 
-def load_panda(
-    model_file: str | None = None,
-    model_root: Path | str | None = None,
+def load_robot(
+    scene: str | None = None,
+    robot: str | None = None,
 ):
     """
-    加载 Franka Panda MuJoCo 模型
+    加载场景，返回 (MjModel, MjData)。
 
-    Args:
-        model_file: 场景名或路径，如 scene.xml / scenes/table.xml。None 用默认
-        model_root: 模型根目录，None 则自动查找（仅当 model_file 为相对文件名时使用）
-
-    Returns:
-        model: mujoco.MjModel
-        data: mujoco.MjData
+    MuJoCo 跨目录 include 时 meshdir 不可靠，故在临时目录合并 XML。
     """
+    import re
+    import tempfile
+
     import mujoco
 
-    if model_file is None:
-        model_file = os.environ.get("ROBOARENA_SCENE", "scene.xml")
+    name = robot or default_robot()
+    xml_path = resolve_scene(scene, robot=name)
+    robot_root = find_robot_root(name)
+    mesh_abs = str((robot_root / "assets").resolve())
+    include_prefix = f"../../robots/{name}/"
 
-    if model_root is not None:
-        root = Path(model_root)
-        xml_path = root / model_file
-        if not xml_path.exists():
-            xml_path = root / model_file.split("/")[-1]
-    else:
-        xml_path = resolve_scene(model_file)
+    with tempfile.TemporaryDirectory(prefix="roboarena_mjcf_") as td:
+        td_path = Path(td)
 
-    if not xml_path.exists():
-        raise FileNotFoundError(f"模型文件不存在: {xml_path}")
+        for src in robot_root.glob("*.xml"):
+            text = src.read_text(encoding="utf-8")
+            for old in ('meshdir="assets"', 'meshdir="./assets/"', 'meshdir="assets/"'):
+                text = text.replace(old, f'meshdir="{mesh_abs}"')
+            (td_path / src.name).write_text(text, encoding="utf-8")
 
-    model = mujoco.MjModel.from_xml_path(str(xml_path))
-    data = mujoco.MjData(model)
-    return model, data
+        scenes_dir = xml_path.parent
+        for src in scenes_dir.glob("*.xml"):
+            text = src.read_text(encoding="utf-8")
+            text = text.replace(include_prefix, "")
+            text = re.sub(
+                rf'file="(?:\.\./)*robots/{re.escape(name)}/([^"]+)"',
+                r'file="\1"',
+                text,
+            )
+            (td_path / src.name).write_text(text, encoding="utf-8")
+
+        model = mujoco.MjModel.from_xml_path(str(td_path / xml_path.name))
+        data = mujoco.MjData(model)
+        return model, data
 
 
 # Panda 默认初始关节位置（7 臂 + 2 夹爪）
 DEFAULT_Q0 = [0.0, 0.0, 0.0, -1.57, 0.0, 1.57, 0.785, 0.04, 0.04]
 
-# Panda 夹爪 ctrl 映射：关节位置 0~0.04 对应 ctrl 0~255
 GRIPPER_CTRL_SCALE = 255.0 / 0.04
 
 
 def qpos_to_ctrl(qpos: list[float], nu: int) -> list[float]:
-    """将 qpos 转为 Panda 的 ctrl：前 7 个直接对应，第 8 个（夹爪）需映射到 0-255"""
-    ctrl = list(qpos[:7])
-    if nu >= 8 and len(qpos) >= 8:
-        ctrl.append(qpos[7] * GRIPPER_CTRL_SCALE)
-    return ctrl[:nu]
+    """qpos → ctrl。Panda(nu==8) 时夹爪映射到 0–255；其余按前 nu 维对齐。"""
+    if nu == 8:
+        ctrl = list(qpos[:7])
+        if len(qpos) >= 8:
+            ctrl.append(qpos[7] * GRIPPER_CTRL_SCALE)
+        else:
+            ctrl.append(0.0)
+        return ctrl[:nu]
+
+    q = [float(x) for x in qpos[:nu]]
+    if len(q) < nu:
+        q.extend([0.0] * (nu - len(q)))
+    return q

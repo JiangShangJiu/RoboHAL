@@ -9,16 +9,16 @@
 import numpy as np
 from typing import Callable
 
-from ..simulation import PandaEnv
+from ..simulation import SimEnv
 
 
 class DataCollector:
     """采集仿真轨迹数据"""
 
-    def __init__(self, env: PandaEnv, policy: Callable[[dict], np.ndarray]):
+    def __init__(self, env: SimEnv, policy: Callable[[dict], np.ndarray]):
         """
         Args:
-            env: Panda 仿真环境
+            env: 仿真环境
             policy: 策略函数 obs -> action
         """
         self.env = env
