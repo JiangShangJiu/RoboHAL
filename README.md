@@ -6,6 +6,7 @@
 
 ```
 assets/robots/<name>/    机器人本体
+assets/props/            家具 / 物体
 assets/scenes/<name>/    场景 XML
 src/simulation/          SimEnv
 src/planning/            OMPL 关节规划（可选）
@@ -26,9 +27,12 @@ pip install -e ".[planning]"   # 可选 OMPL
 ```bash
 python scripts/show_env.py --list-robots
 python scripts/show_env.py --list-scenes
-python scripts/show_env.py --scene kitchen_lite.xml
+# 移动双臂客厅（推荐）
+python scripts/show_env.py --robot pal_tiago_dual --scene living_lite.xml
+# 固定臂厨房
+python scripts/show_env.py --robot panda --scene kitchen_lite.xml
 
-python scripts/collect_data.py --scene kitchen_lite.xml --episodes 10 -o data/demo.h5
+python scripts/collect_data.py --robot pal_tiago_dual --scene living_lite.xml --episodes 10 -o data/demo.h5
 python scripts/replay_trajectory.py data/demo.h5 --episode 0
 
 python scripts/plan_joint_ompl.py --goal 0,0,0,-1.5,0,1.5,0.7 -o data/ompl_plan.h5
@@ -55,7 +59,8 @@ mgr.save("data/demo.h5")
 | `robot_soccer_kit` | 小型全向底盘 |
 | `allegro` | 单独手掌（拼装用） |
 
-Panda 场景：`empty.xml` / `kitchen_lite.xml` / `mjx_single_cube.xml`。详见 `assets/README.md`。
+推荐客厅：`--robot pal_tiago_dual --scene living_lite.xml`（移动底盘 + 双臂）。  
+家具在 `assets/props/`。详见 `assets/README.md`。
 
 ## 环境变量
 

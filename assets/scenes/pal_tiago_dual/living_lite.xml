@@ -1,0 +1,65 @@
+<mujoco model="tiago living lite">
+  <!-- 移动双臂客厅：TIAGo++ 出生在中央空地，可走向桌/沙发/书架 -->
+  <include file="../../robots/pal_tiago_dual/tiago_dual_position.xml"/>
+  <include file="../../props/living_mobile_set.xml"/>
+
+  <statistic center="0.6 -0.4 0.6" extent="3.2"/>
+
+  <visual>
+    <headlight diffuse="0.55 0.55 0.55" ambient="0.28 0.28 0.3" specular="0 0 0"/>
+    <rgba haze="0.18 0.22 0.28 1"/>
+    <global azimuth="140" elevation="-18" realtime="1"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.70 0.76 0.82" rgb2="0.18 0.20 0.24"
+      width="512" height="3072"/>
+    <texture type="2d" name="living_floor" builtin="checker" mark="edge"
+      rgb1="0.55 0.50 0.44" rgb2="0.48 0.44 0.38" markrgb="0.65 0.60 0.55" width="300" height="300"/>
+    <material name="living_floor" texture="living_floor" texuniform="true" texrepeat="8 8" reflectance="0.08"/>
+    <material name="living_wall" rgba="0.90 0.89 0.86 1"/>
+    <material name="living_rug" rgba="0.45 0.38 0.32 1"/>
+  </asset>
+
+  <worldbody>
+    <light name="spotlight" mode="targetbody" target="base_link" pos="1 0 8"/>
+    <geom name="floor" pos="0 0 0" size="0 0 0.05" type="plane" material="living_floor"
+      contype="1" conaffinity="1"/>
+
+    <!-- 房间约 5m x 4.5m，原点附近留空给底盘 -->
+    <geom name="wall_back" type="box" size="2.6 0.05 1.1" pos="0.4 -2.55 1.1" material="living_wall"/>
+    <geom name="wall_front" type="box" size="2.6 0.05 1.1" pos="0.4 1.9 1.1" material="living_wall"
+      contype="0" conaffinity="0"/>
+    <geom name="wall_left" type="box" size="0.05 2.2 1.1" pos="-2.1 -0.3 1.1" material="living_wall"/>
+    <geom name="wall_right" type="box" size="0.05 2.2 1.1" pos="2.7 -0.3 1.1" material="living_wall"/>
+
+    <geom name="rug" type="box" size="1.0 0.7 0.008" pos="0.2 -1.35 0.008" material="living_rug"
+      contype="0" conaffinity="0"/>
+
+    <!-- 边桌上：遥控器、杯子 -->
+    <body name="remote" pos="1.70 0.55 0.79">
+      <freejoint/>
+      <geom name="remote" type="box" size="0.05 0.022 0.01" rgba="0.12 0.12 0.14 1"
+        mass="0.06" friction="1.2 0.5 0.01" condim="3" solref="0.01 1"/>
+    </body>
+    <body name="mug" pos="1.90 0.70 0.81">
+      <freejoint/>
+      <geom name="mug" type="cylinder" size="0.03 0.04" rgba="0.85 0.35 0.28 1"
+        mass="0.1" friction="1 0.5 0.01" condim="3" solref="0.01 1"/>
+    </body>
+
+    <!-- 茶几上：方盒 -->
+    <body name="box" pos="0.15 -1.20 0.44">
+      <freejoint/>
+      <geom name="box" type="box" size="0.035 0.035 0.035" rgba="0.2 0.65 0.4 1"
+        mass="0.08" friction="1.2 0.5 0.01" condim="3" solref="0.01 1"/>
+    </body>
+
+    <!-- 书架上：书 -->
+    <body name="book" pos="2.15 -1.55 0.60">
+      <freejoint/>
+      <geom name="book" type="box" size="0.07 0.045 0.012" rgba="0.55 0.2 0.2 1"
+        mass="0.12" friction="1 0.5 0.01" condim="3" solref="0.01 1"/>
+    </body>
+  </worldbody>
+</mujoco>

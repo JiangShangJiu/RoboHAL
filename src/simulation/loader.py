@@ -4,6 +4,7 @@
 MuJoCo 模型 / 场景加载器。
 
   assets/robots/<robot>/     机器人本体（XML + mesh）
+  assets/props/              可复用家具 / 物体
   assets/scenes/<robot>/     该机器人可用场景
 """
 
@@ -117,8 +118,8 @@ def load_robot(
     name = robot or default_robot()
     xml_path = resolve_scene(scene, robot=name)
     robot_root = find_robot_root(name)
+    props_dir = _assets_root() / "props"
     mesh_abs = str((robot_root / "assets").resolve())
-    include_prefix = f"../../robots/{name}/"
 
     with tempfile.TemporaryDirectory(prefix="roboarena_mjcf_") as td:
         td_path = Path(td)
@@ -129,12 +130,29 @@ def load_robot(
                 text = text.replace(old, f'meshdir="{mesh_abs}"')
             (td_path / src.name).write_text(text, encoding="utf-8")
 
+        if props_dir.is_dir():
+            for src in props_dir.glob("*.xml"):
+                text = src.read_text(encoding="utf-8")
+                props_mesh = props_dir / "assets"
+                if props_mesh.is_dir():
+                    for old in (
+                        'meshdir="assets"',
+                        'meshdir="./assets/"',
+                        'meshdir="assets/"',
+                    ):
+                        text = text.replace(old, f'meshdir="{props_mesh.resolve()}"')
+                (td_path / src.name).write_text(text, encoding="utf-8")
+
         scenes_dir = xml_path.parent
         for src in scenes_dir.glob("*.xml"):
             text = src.read_text(encoding="utf-8")
-            text = text.replace(include_prefix, "")
             text = re.sub(
                 rf'file="(?:\.\./)*robots/{re.escape(name)}/([^"]+)"',
+                r'file="\1"',
+                text,
+            )
+            text = re.sub(
+                r'file="(?:\.\./)*props/([^"]+)"',
                 r'file="\1"',
                 text,
             )

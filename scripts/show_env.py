@@ -78,8 +78,15 @@ def main():
         if keycode == 32:  # 空格
             paused = not paused
 
-    lookat = [0.0, 0.0, 0.6] if robot in ("pal_tiago_dual", "robot_soccer_kit") else [0.55, 0, 0.5]
-    distance = 3.5 if robot == "pal_tiago_dual" else 2.2
+    if robot == "pal_tiago_dual":
+        lookat = [0.5, -0.4, 0.6]
+        distance = 5.0
+    elif robot == "robot_soccer_kit":
+        lookat = [0.0, 0.0, 0.4]
+        distance = 2.5
+    else:
+        lookat = [0.55, 0, 0.5]
+        distance = 2.2
 
     with mujoco.viewer.launch_passive(model, data, key_callback=key_callback) as viewer:
         viewer.cam.lookat[:] = lookat

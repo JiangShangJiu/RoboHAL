@@ -1,0 +1,62 @@
+<mujoco model="prop_living_mobile_set">
+  <!-- 移动机械臂客厅家具：中央留空给底盘，家具靠墙摆 -->
+  <asset>
+    <material name="prop_table_top" rgba="0.62 0.48 0.34 1" reflectance="0.12"/>
+    <material name="prop_table_leg" rgba="0.28 0.26 0.24 1"/>
+    <material name="prop_sofa_body" rgba="0.32 0.42 0.52 1"/>
+    <material name="prop_sofa_cushion" rgba="0.40 0.52 0.62 1"/>
+    <material name="prop_sofa_leg" rgba="0.22 0.2 0.18 1"/>
+    <material name="prop_ct_top" rgba="0.55 0.42 0.30 1" reflectance="0.15"/>
+    <material name="prop_ct_leg" rgba="0.25 0.24 0.22 1"/>
+    <material name="prop_shelf_wood" rgba="0.48 0.36 0.26 1"/>
+    <material name="prop_shelf_back" rgba="0.42 0.32 0.24 1"/>
+  </asset>
+
+  <worldbody>
+    <!-- 边桌 / 操作台：右侧，台面 0.75m（TIAGo 可靠近操作） -->
+    <body name="table" pos="1.8 0.6 0">
+      <geom name="table_top" type="box" size="0.40 0.30 0.02" pos="0 0 0.75"
+        material="prop_table_top" friction="1.2 0.5 0.01"/>
+      <geom name="table_leg_fl" type="box" size="0.025 0.025 0.365" pos="0.32 0.22 0.365" material="prop_table_leg"/>
+      <geom name="table_leg_fr" type="box" size="0.025 0.025 0.365" pos="0.32 -0.22 0.365" material="prop_table_leg"/>
+      <geom name="table_leg_bl" type="box" size="0.025 0.025 0.365" pos="-0.32 0.22 0.365" material="prop_table_leg"/>
+      <geom name="table_leg_br" type="box" size="0.025 0.025 0.365" pos="-0.32 -0.22 0.365" material="prop_table_leg"/>
+    </body>
+
+    <!-- 沙发：后墙 -->
+    <body name="sofa" pos="0.2 -2.0 0">
+      <geom name="sofa_seat" type="box" size="0.70 0.32 0.10" pos="0 0 0.28" material="prop_sofa_cushion"
+        friction="1 0.5 0.01"/>
+      <geom name="sofa_back" type="box" size="0.70 0.07 0.24" pos="0 -0.25 0.52" material="prop_sofa_body"/>
+      <geom name="sofa_arm_l" type="box" size="0.07 0.32 0.18" pos="0.63 0 0.42" material="prop_sofa_body"/>
+      <geom name="sofa_arm_r" type="box" size="0.07 0.32 0.18" pos="-0.63 0 0.42" material="prop_sofa_body"/>
+      <geom name="sofa_base" type="box" size="0.66 0.30 0.08" pos="0 0 0.10" material="prop_sofa_body"/>
+      <geom name="sofa_leg_fl" type="cylinder" size="0.03 0.04" pos="0.55 0.22 0.04" material="prop_sofa_leg"/>
+      <geom name="sofa_leg_fr" type="cylinder" size="0.03 0.04" pos="0.55 -0.22 0.04" material="prop_sofa_leg"/>
+      <geom name="sofa_leg_bl" type="cylinder" size="0.03 0.04" pos="-0.55 0.22 0.04" material="prop_sofa_leg"/>
+      <geom name="sofa_leg_br" type="cylinder" size="0.03 0.04" pos="-0.55 -0.22 0.04" material="prop_sofa_leg"/>
+    </body>
+
+    <!-- 茶几：沙发前，留出导航通道 -->
+    <body name="coffee_table" pos="0.2 -1.25 0">
+      <geom name="ct_top" type="box" size="0.45 0.25 0.018" pos="0 0 0.40"
+        material="prop_ct_top" friction="1.1 0.5 0.01"/>
+      <geom name="ct_leg_fl" type="box" size="0.02 0.02 0.19" pos="0.36 0.18 0.19" material="prop_ct_leg"/>
+      <geom name="ct_leg_fr" type="box" size="0.02 0.02 0.19" pos="0.36 -0.18 0.19" material="prop_ct_leg"/>
+      <geom name="ct_leg_bl" type="box" size="0.02 0.02 0.19" pos="-0.36 0.18 0.19" material="prop_ct_leg"/>
+      <geom name="ct_leg_br" type="box" size="0.02 0.02 0.19" pos="-0.36 -0.18 0.19" material="prop_ct_leg"/>
+      <geom name="ct_shelf" type="box" size="0.40 0.20 0.01" pos="0 0 0.14" material="prop_ct_top"/>
+    </body>
+
+    <!-- 书架：右后墙角 -->
+    <body name="shelf" pos="2.2 -1.6 0">
+      <geom name="shelf_back" type="box" size="0.30 0.02 0.60" pos="0 -0.14 0.60" material="prop_shelf_back"/>
+      <geom name="shelf_side_l" type="box" size="0.02 0.14 0.60" pos="0.28 0 0.60" material="prop_shelf_wood"/>
+      <geom name="shelf_side_r" type="box" size="0.02 0.14 0.60" pos="-0.28 0 0.60" material="prop_shelf_wood"/>
+      <geom name="shelf_board_1" type="box" size="0.28 0.13 0.012" pos="0 0 0.22" material="prop_shelf_wood"/>
+      <geom name="shelf_board_2" type="box" size="0.28 0.13 0.012" pos="0 0 0.55" material="prop_shelf_wood"/>
+      <geom name="shelf_board_3" type="box" size="0.28 0.13 0.012" pos="0 0 0.88" material="prop_shelf_wood"/>
+      <geom name="shelf_board_4" type="box" size="0.28 0.13 0.012" pos="0 0 1.15" material="prop_shelf_wood"/>
+    </body>
+  </worldbody>
+</mujoco>
