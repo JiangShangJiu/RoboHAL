@@ -1,0 +1,4 @@
+{
+  "name": "RoboArena",
+  "install": "bash .cursor/install.sh"
+}
