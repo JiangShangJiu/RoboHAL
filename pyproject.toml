@@ -4,23 +4,29 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "roboarena"
-version = "0.1.0"
-description = "机器人学习数据采集与可视化"
+version = "0.2.0"
+description = "基于 MuJoCo 的机器人硬件仿真接口"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "mujoco>=2.3.3",
+    "mujoco>=3.4,<4",
     "numpy",
-    "h5py",
-    "matplotlib",
-    "pandas",
 ]
 
+[project.scripts]
+roboarena = "roboarena.cli:main"
+
 [project.optional-dependencies]
+dev = ["pytest>=7"]
+legacy = ["h5py", "matplotlib", "pandas"]
 planning = [
     "ompl>=1.6,<2",
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*"]
+include = ["roboarena*", "src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
