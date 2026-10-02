@@ -3,12 +3,15 @@
 Commands are SI quantities. Drives apply generalized effort through
 ``qfrc_applied``; native MJCF actuators are disabled to avoid double actuation.
 This is a software servo, not an electrical motor or vendor firmware model.
+
+``MujocoHardware`` is the simulated implementation of the backend-independent
+``robohal.api.RobotHardware`` protocol: control code written against that
+protocol runs unchanged on a real machine driven by ``RealHardware``.
 """
 
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass
 from numbers import Integral
 from pathlib import Path
 from typing import Mapping
@@ -16,47 +19,7 @@ from typing import Mapping
 import mujoco
 import numpy as np
 
-
-@dataclass(frozen=True)
-class JointConfig:
-    kp: float = 100.0
-    kd: float = 10.0
-    effort_limit: float = 100.0
-    velocity_limit: float = 2.0
-
-    def __post_init__(self) -> None:
-        for name in ("kp", "kd", "effort_limit", "velocity_limit"):
-            value = getattr(self, name)
-            if not np.isscalar(value) or not np.isfinite(value):
-                raise ValueError(f"{name} must be a finite scalar")
-            if value < 0 or (name.endswith("limit") and value == 0):
-                raise ValueError(f"{name} must be {'positive' if name.endswith('limit') else 'nonnegative'}")
-
-
-@dataclass(frozen=True)
-class JointInfo:
-    name: str
-    kind: str
-    lower: float | None
-    upper: float | None
-    effort_limit: float | None
-    velocity_limit: float | None
-    controllable: bool
-
-
-@dataclass(frozen=True)
-class JointState:
-    position: float
-    velocity: float
-    effort: float
-    mode: str
-
-
-@dataclass(frozen=True)
-class HardwareState:
-    time: float
-    joints: dict[str, JointState]
-    stopped: bool
+from .api import HardwareState, JointConfig, JointInfo, JointState
 
 
 class MujocoHardware:
