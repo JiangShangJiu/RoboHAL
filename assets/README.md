@@ -13,13 +13,13 @@ assets/
   - `<include file="../../robots/pal_tiago_dual/tiago_dual_position.xml"/>`
   - `<include file="../../props/living_mobile_set.xml"/>`
 - 加载器会把 robots / props / 场景 XML 合并到临时目录
-- 默认：`ROBOARENA_ROBOT`、`ROBOARENA_SCENE`
+- 默认：`ROBOHAL_ROBOT`、`ROBOHAL_SCENE`
 
 ## 新增场景
 
 1. 需要的家具放进 `props/`
 2. `scenes/<robot>/xxx.xml` include 机器人与 props
-3. `python scripts/show_env.py --robot <name> --scene xxx.xml`
+3. `robohal --robot <name> --scene xxx.xml`
 
 ## Props
 
@@ -35,8 +35,8 @@ assets/
 | `pal_tiago_dual` | `empty.xml` / `velocity.xml` / `living_lite.xml` | 移动双臂客厅 |
 
 ```bash
-python scripts/show_env.py --robot pal_tiago_dual --scene living_lite.xml
-python scripts/show_env.py --robot panda --scene kitchen_lite.xml
+robohal --robot pal_tiago_dual --scene living_lite.xml
+robohal --robot panda --scene kitchen_lite.xml
 ```
 
 机器人模型多来自 [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie)；`panda_allegro` 为本仓库组合。

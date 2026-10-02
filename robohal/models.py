@@ -1,7 +1,7 @@
 """Load MJCF scenes without depending on the old simulation package.
 
 Assets live in ``assets/{robots,scenes}`` in a source checkout. Set
-``ROBOARENA_ASSETS`` to use an external assets directory. Include files and
+``ROBOHAL_ASSETS`` to use an external assets directory. Include files and
 models use native MuJoCo path semantics first. For legacy bundled models,
 a fallback resolves asset directories relative to their declaring document.
 """
@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 
 
 def _assets_root() -> Path:
-    configured = os.environ.get("ROBOARENA_ASSETS")
+    configured = os.environ.get("ROBOHAL_ASSETS")
     if configured:
         root = Path(configured).expanduser().resolve()
         if not root.is_dir():
-            raise FileNotFoundError(f"ROBOARENA_ASSETS is not a directory: {root}")
+            raise FileNotFoundError(f"ROBOHAL_ASSETS is not a directory: {root}")
         return root
     return Path(__file__).resolve().parents[1] / "assets"
 
@@ -100,7 +100,7 @@ def load_mjcf(path: str | os.PathLike[str]) -> mujoco.MjModel:
         # through this compatibility layer.
         pass
 
-    with tempfile.TemporaryDirectory(prefix="roboarena_mjcf_") as directory:
+    with tempfile.TemporaryDirectory(prefix="robohal_mjcf_") as directory:
         destination = Path(directory)
         counter = 0
 

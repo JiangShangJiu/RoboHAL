@@ -32,7 +32,7 @@ def _json_default(value):
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run a robot through RoboArena's MuJoCo hardware interface.")
+    parser = argparse.ArgumentParser(description="Run a robot through RoboHAL's MuJoCo hardware interface.")
     parser.add_argument("--robot", default="panda", help="robot name (default: panda)")
     parser.add_argument("--scene", default="empty.xml", help="scene filename (default: empty.xml)")
     parser.add_argument("--model", metavar="XML", help="load an arbitrary MJCF file instead of a registered robot")
@@ -124,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         return 130
     except (OSError, ValueError, RuntimeError, KeyError) as error:
-        parser.exit(1, f"roboarena: {error}\n")
+        parser.exit(1, f"robohal: {error}\n")
 
 
 if __name__ == "__main__":

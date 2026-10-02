@@ -1,12 +1,12 @@
 import mujoco
 import pytest
 
-from roboarena.models import available_robots, available_scenes, load_mjcf, load_robot
+from robohal.models import available_robots, available_scenes, load_mjcf, load_robot
 
 
 @pytest.fixture
 def builtin_assets(monkeypatch):
-    monkeypatch.delenv("ROBOARENA_ASSETS", raising=False)
+    monkeypatch.delenv("ROBOHAL_ASSETS", raising=False)
 
 
 def test_builtin_panda_loads_and_steps(builtin_assets):
@@ -29,7 +29,7 @@ def test_external_assets_and_scene_error(tmp_path, monkeypatch):
     scene_dir = tmp_path / "scenes" / "custom"
     scene_dir.mkdir(parents=True)
     (scene_dir / "empty.xml").write_text('<mujoco><worldbody><geom type="sphere" size="0.1"/></worldbody></mujoco>')
-    monkeypatch.setenv("ROBOARENA_ASSETS", str(tmp_path))
+    monkeypatch.setenv("ROBOHAL_ASSETS", str(tmp_path))
     assert available_robots() == ["custom"]
     assert available_scenes("custom") == ["empty.xml"]
     assert load_robot("custom").ngeom == 1
@@ -101,7 +101,7 @@ def test_missing_include_has_path(tmp_path):
 
 
 def test_list_cli_works_without_display(monkeypatch, capsys, builtin_assets):
-    from roboarena.cli import main
+    from robohal.cli import main
 
     monkeypatch.delenv("DISPLAY", raising=False)
     assert main(["--list-robots"]) == 0
@@ -140,7 +140,7 @@ def cli_model(tmp_path):
 @pytest.mark.parametrize("mode,target", [("position", "0.2"), ("velocity", "0.1"), ("effort", "1")])
 def test_headless_cli_advances_real_dynamics(cli_model, mode, target, capsys, monkeypatch):
     import json
-    from roboarena.cli import main
+    from robohal.cli import main
 
     monkeypatch.delenv("DISPLAY", raising=False)
     monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
@@ -164,7 +164,7 @@ def test_headless_cli_advances_real_dynamics(cli_model, mode, target, capsys, mo
     ["--velocity", "axis=1", "--velocity", "axis=0.2"],
 ])
 def test_cli_rejects_conflicting_joint_commands(commands, capsys):
-    from roboarena.cli import main
+    from robohal.cli import main
 
     with pytest.raises(SystemExit) as error:
         main(["--headless", *commands])
@@ -174,7 +174,7 @@ def test_cli_rejects_conflicting_joint_commands(commands, capsys):
 
 @pytest.mark.parametrize("arguments", [["--steps", "-1"], ["--position", "axis=nan"], ["--timestep", "0"]])
 def test_cli_rejects_invalid_arguments(arguments):
-    from roboarena.cli import main
+    from robohal.cli import main
 
     with pytest.raises(SystemExit) as error:
         main(arguments)
@@ -190,18 +190,18 @@ def test_cli_help_and_list_import_no_mujoco_or_gl(builtin_assets):
     env.pop("DISPLAY", None)
     env.pop("WAYLAND_DISPLAY", None)
     code = (
-        "import sys; from roboarena.cli import main; "
+        "import sys; from robohal.cli import main; "
         "main(['--list-robots']); "
         "assert 'mujoco' not in sys.modules; assert 'glfw' not in sys.modules"
     )
     subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, check=True)
-    help_result = subprocess.run([sys.executable, "-m", "roboarena.cli", "--help"], env=env, capture_output=True, text=True, check=True)
+    help_result = subprocess.run([sys.executable, "-m", "robohal.cli", "--help"], env=env, capture_output=True, text=True, check=True)
     assert "--effort" in help_result.stdout
 
 
 def test_cli_joint_listing_and_zero_steps(cli_model, capsys):
     import json
-    from roboarena.cli import main
+    from robohal.cli import main
 
     assert main(["--model", cli_model, "--list-joints"]) == 0
     metadata = json.loads(capsys.readouterr().out)

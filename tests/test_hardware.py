@@ -8,7 +8,7 @@ import mujoco
 import numpy as np
 import pytest
 
-from roboarena import JointConfig, MujocoHardware
+from robohal import JointConfig, MujocoHardware
 
 
 MODEL_XML = """

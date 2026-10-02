@@ -8,6 +8,7 @@ outputs/*
 
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 *.so
@@ -23,6 +24,7 @@ env/
 *.swo
 
 # 其他
+MUJOCO_LOG.TXT
 *.egg-info/
 dist/
 build/
